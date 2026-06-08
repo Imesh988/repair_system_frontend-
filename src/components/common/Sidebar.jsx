@@ -14,16 +14,16 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: '/', name: 'Dashboard', icon: FiHome, roles: ['admin', 'manager', 'technician', 'receptionist'], color: 'from-blue-600 to-blue-700', light: 'bg-blue-200 text-blue-800' },
-    { path: '/customers', name: 'Customers', icon: FiUsers, roles: ['admin', 'manager', 'receptionist'], color: 'from-emerald-600 to-teal-700', light: 'bg-emerald-200 text-emerald-800' },
-    { path: '/devices', name: 'Devices', icon: FiSmartphone, roles: ['admin', 'manager', 'technician', 'receptionist'], color: 'from-orange-500 to-red-600', light: 'bg-orange-200 text-orange-800' },
-    { path: '/repairs', name: 'Repairs', icon: FiTool, roles: ['admin', 'manager', 'technician', 'receptionist'], color: 'from-rose-600 to-pink-700', light: 'bg-rose-200 text-rose-800' },
+    // { path: '/customers', name: 'Customers', icon: FiUsers, roles: ['admin', 'manager', 'receptionist'], color: 'from-emerald-600 to-teal-700', light: 'bg-emerald-200 text-emerald-800' },
+    // { path: '/devices', name: 'Devices', icon: FiSmartphone, roles: ['admin', 'manager', 'technician', 'receptionist'], color: 'from-orange-500 to-red-600', light: 'bg-orange-200 text-orange-800' },
+    // { path: '/repairs', name: 'Repairs', icon: FiTool, roles: ['admin', 'manager', 'technician', 'receptionist'], color: 'from-rose-600 to-pink-700', light: 'bg-rose-200 text-rose-800' },
     { path: '/inventory', name: 'Inventory', icon: FiPackage, roles: ['admin', 'manager'], color: 'from-indigo-600 to-purple-700', light: 'bg-indigo-200 text-indigo-800' },
-    { path: '/bills', name: 'Billing', icon: FiFileText, roles: ['admin', 'manager', 'receptionist'], color: 'from-cyan-600 to-blue-600', light: 'bg-cyan-200 text-cyan-800' },
-    { path: '/payments', name: 'Payments', icon: FiCreditCard, roles: ['admin', 'manager', 'receptionist'], color: 'from-violet-600 to-purple-700', light: 'bg-violet-200 text-violet-800' },
+    // { path: '/bills', name: 'Billing', icon: FiFileText, roles: ['admin', 'manager', 'receptionist'], color: 'from-cyan-600 to-blue-600', light: 'bg-cyan-200 text-cyan-800' },
+    { path: '/repair-system', name: 'Job data', icon: FiCreditCard, roles: ['admin', 'manager', 'receptionist'], color: 'from-violet-600 to-purple-700', light: 'bg-violet-200 text-violet-800' },
     { path: '/expenses', name: 'Expenses', icon: FiDollarSign, roles: ['admin', 'manager'], color: 'from-red-600 to-rose-700', light: 'bg-red-200 text-red-800' },
     { path: '/employees', name: 'Staff', icon: FiEmployees, roles: ['admin'], color: 'from-teal-600 to-green-700', light: 'bg-teal-200 text-teal-800' },
     { path: '/suppliers', name: 'Suppliers', icon: FiTruck, roles: ['admin', 'manager'], color: 'from-amber-600 to-orange-700', light: 'bg-amber-200 text-amber-800' },
-    { path: '/reports', name: 'Analytics', icon: FiBarChart2, roles: ['admin', 'manager'], color: 'from-fuchsia-600 to-purple-700', light: 'bg-fuchsia-200 text-fuchsia-800' },
+    // { path: '/reports', name: 'Analytics', icon: FiBarChart2, roles: ['admin', 'manager'], color: 'from-fuchsia-600 to-purple-700', light: 'bg-fuchsia-200 text-fuchsia-800' },
     { path: '/settings', name: 'Settings', icon: FiSettings, roles: ['admin'], color: 'from-slate-600 to-gray-700', light: 'bg-slate-300 text-slate-800' },
   ];
 

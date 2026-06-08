@@ -1,4 +1,3 @@
-// frontend/src/services/api.js
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -10,14 +9,24 @@ const api = axios.create({
   },
 });
 
+// Request interceptor – token attach කිරීම පමණයි
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor – 401 error එක auto logout නොකරන්න
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
-      window.location.href = '/login';
-    }
+    // මෙතනදී token ඉවත් කිරීම හෝ redirect නොකරන්න
+    // component level එකේදී handle කිරීමට ඉඩ දෙන්න
     return Promise.reject(error);
   }
 );
