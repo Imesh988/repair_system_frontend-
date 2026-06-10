@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  FiSearch, FiPrinter, FiArrowLeft, FiX, FiEye,
-  FiDatabase, FiActivity, FiCheckCircle, FiClock,
-  FiDollarSign, FiCalendar, FiMapPin, FiTool, FiBox, FiTrendingUp
+  FiSearch, FiX, FiEye, FiDatabase, FiActivity, FiCheckCircle,
+  FiCalendar, FiMapPin, FiTool, FiBox, FiTrendingUp, FiAlertCircle
 } from 'react-icons/fi';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+
+const LOGO_URL = '/remove.png';
 
 const Dashboard = ({ onBack }) => {
   const [jobs, setJobs] = useState([]);
@@ -45,6 +46,20 @@ const Dashboard = ({ onBack }) => {
     });
   };
 
+  const getStatusLabel = (code) => {
+    if (code === 'PENDING') return 'Done';
+    if (code === 'IN PROGRESS') return 'Pending';
+    if (code === 'COMPLETED') return 'Handover';
+    return code;
+  };
+
+  const getStatusColor = (code) => {
+    if (code === 'PENDING') return 'bg-amber-100 text-amber-700';
+    if (code === 'IN PROGRESS') return 'bg-blue-100 text-blue-700';
+    if (code === 'COMPLETED') return 'bg-emerald-100 text-emerald-700';
+    return 'bg-gray-100 text-gray-700';
+  };
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -56,22 +71,34 @@ const Dashboard = ({ onBack }) => {
 
   const getSortValue = (job, field) => {
     switch (field) {
-      case 'id': return job.id;
       case 'job_number': return job.job_number;
+      case 'customer_name': return job.customer_name;
       case 'received_on': return job.received_on || '';
-      case 'customer_name': return job.customer_name || '';
-      case 'status_code': return job.status_code || '';
       case 'final_amount': return calculateFinalAmount(job);
       default: return '';
     }
   };
 
-  const filteredJobs = jobs.filter(job =>
-    job.job_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.category_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.fault_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ).sort((a, b) => {
+  const getAllFaults = (job) => {
+    return [job.fault1_name, job.fault2_name, job.fault3_name, job.fault4_name, job.fault5_name].filter(f => f);
+  };
+
+  const getAllAccessories = (job) => {
+    return [1, 2, 3, 4, 5, 6, 7].map(i => job[`acc${i}_name`]).filter(a => a);
+  };
+
+  const filteredJobs = jobs.filter(job => {
+    const term = searchTerm.toLowerCase();
+    const faultsText = getAllFaults(job).join(' ').toLowerCase();
+    const accessoriesText = getAllAccessories(job).join(' ').toLowerCase();
+    return (
+      job.job_number?.toLowerCase().includes(term) ||
+      job.customer_name?.toLowerCase().includes(term) ||
+      job.category_name?.toLowerCase().includes(term) ||
+      faultsText.includes(term) ||
+      accessoriesText.includes(term)
+    );
+  }).sort((a, b) => {
     let aVal = getSortValue(a, sortField);
     let bVal = getSortValue(b, sortField);
     if (typeof aVal === 'string') { aVal = aVal.toLowerCase(); bVal = bVal.toLowerCase(); }
@@ -95,306 +122,186 @@ const Dashboard = ({ onBack }) => {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        
-        {/* Header with back button and print */}
-        <div className="flex flex-wrap justify-between items-center gap-4 print:hidden">
-          <div className="flex items-center gap-3">
-            {onBack && (
-              <button 
-                onClick={onBack} 
-                className="p-2 rounded-xl bg-white shadow-sm hover:bg-slate-50 transition-all"
-              >
-                <FiArrowLeft size={20} className="text-slate-600" />
-              </button>
-            )}
-            
-          </div>
-          
-        </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 print:hidden">
-          <div className="bg-blue-50 rounded-2xl p-5 shadow-sm hover:shadow transition">
+          <div className="bg-blue-50 rounded-2xl p-5 shadow-sm hover:shadow transition border border-slate-100">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Jobs</p>
-                <p className="text-2xl font-bold text-slate-700 mt-1">{stats.total}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <FiDatabase className="text-blue-500 text-xl" />
-              </div>
+              <div><p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Jobs</p><p className="text-2xl font-bold text-slate-700 mt-1">{stats.total}</p></div>
+              <div className="bg-blue-100 p-3 rounded-full"><FiDatabase className="text-blue-500 text-xl" /></div>
             </div>
           </div>
-          <div className="bg-emerald-50 rounded-2xl p-5 shadow-sm hover:shadow transition">
+          <div className="bg-emerald-50 rounded-2xl p-5 shadow-sm hover:shadow transition border border-slate-100">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Completed</p>
-                <p className="text-2xl font-bold text-slate-700 mt-1">{stats.completed}</p>
-              </div>
-              <div className="bg-emerald-100 p-3 rounded-full">
-                <FiCheckCircle className="text-emerald-500 text-xl" />
-              </div>
+              <div><p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Completed</p><p className="text-2xl font-bold text-slate-700 mt-1">{stats.completed}</p></div>
+              <div className="bg-emerald-100 p-3 rounded-full"><FiCheckCircle className="text-emerald-500 text-xl" /></div>
             </div>
           </div>
-          <div className="bg-amber-50 rounded-2xl p-5 shadow-sm hover:shadow transition">
+          <div className="bg-amber-50 rounded-2xl p-5 shadow-sm hover:shadow transition border border-slate-100">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">In Progress</p>
-                <p className="text-2xl font-bold text-slate-700 mt-1">{stats.active}</p>
-              </div>
-              <div className="bg-amber-100 p-3 rounded-full">
-                <FiActivity className="text-amber-500 text-xl" />
-              </div>
+              <div><p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">Active</p><p className="text-2xl font-bold text-slate-700 mt-1">{stats.active}</p></div>
+              <div className="bg-amber-100 p-3 rounded-full"><FiActivity className="text-amber-500 text-xl" /></div>
             </div>
           </div>
-          <div className="bg-rose-50 rounded-2xl p-5 shadow-sm hover:shadow transition">
+          <div className="bg-rose-50 rounded-2xl p-5 shadow-sm hover:shadow transition border border-slate-100">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Total Revenue</p>
-                <p className="text-2xl font-bold text-slate-700 mt-1">LKR {stats.revenue.toLocaleString()}</p>
-              </div>
-              <div className="bg-rose-100 p-3 rounded-full">
-                <FiTrendingUp className="text-rose-500 text-xl" />
-              </div>
+              <div><p className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Revenue</p><p className="text-2xl font-bold text-slate-700 mt-1">LKR {stats.revenue.toLocaleString()}</p></div>
+              <div className="bg-rose-100 p-3 rounded-full"><FiTrendingUp className="text-rose-500 text-xl" /></div>
             </div>
           </div>
         </div>
 
-        {/* Main Table */}
-        <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-          <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
-            <div className="relative w-full md:w-96">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search by job number, customer, category or fault..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-300 outline-none transition text-sm"
-              />
-            </div>
-            <div className="text-xs text-slate-500 bg-white px-4 py-1.5 rounded-full border border-slate-200">
-              {filteredJobs.length} records found
-            </div>
-          </div>
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden relative">
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-[0.18]" 
+            style={{
+              backgroundImage: `url(${LOGO_URL})`,
+              backgroundSize: '1200px',
+              backgroundPosition: 'center 170px',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed'
+            }}
+          ></div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-100 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('job_number')}>
-                    Job ID {sortField === 'job_number' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('customer_name')}>
-                    Customer {sortField === 'customer_name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="py-4 px-5">Issue & Accessories</th>
-                  <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('received_on')}>
-                    Received {sortField === 'received_on' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th className="py-4 px-5">Status</th>
-                  <th className="py-4 px-5 text-right">Final Amount</th>
-                  <th className="py-4 px-5 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredJobs.map((job, idx) => {
-                  const finalAmount = calculateFinalAmount(job);
-                  return (
-                    <tr key={job.id} className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                      <td className="py-4 px-5">
-                        <span className="font-mono text-sm font-bold text-slate-800">{job.job_number}</span>
-                        <div className="text-[10px] text-slate-400 mt-0.5">ID: {job.id}</div>
-                      </td>
-                      <td className="py-4 px-5">
-                        <div className="font-semibold text-slate-800">{job.customer_name}</div>
-                        <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-                          <FiMapPin size={12} /> <span className="truncate max-w-[180px]">{job.address || 'No address'}</span>
-                        </div>
-                      </td>
-                      <td className="py-4 px-5">
-                        <div className="mb-1">
-                          <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-md">
-                            {job.category_name || 'General'}
+          <div className="relative z-10">
+            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
+              <div className="relative w-full md:w-96">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search by job number, customer, category, fault or accessory..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-300 outline-none transition text-sm"
+                />
+              </div>
+              <div className="text-xs text-slate-500 bg-white px-4 py-1.5 rounded-full border border-slate-200">{filteredJobs.length} records found</div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('job_number')}>Job ID {sortField === 'job_number' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('customer_name')}>Customer {sortField === 'customer_name' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th className="py-4 px-5">Issues & Accessories</th>
+                    <th className="py-4 px-5 cursor-pointer hover:text-slate-800" onClick={() => handleSort('received_on')}>Received {sortField === 'received_on' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th className="py-4 px-5">Status</th>
+                    <th className="py-4 px-5 text-right cursor-pointer hover:text-slate-800" onClick={() => handleSort('final_amount')}>Final Amount {sortField === 'final_amount' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th className="py-4 px-5 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredJobs.map((job) => {
+                    const faults = getAllFaults(job);
+                    const accessories = getAllAccessories(job);
+                    return (
+                      <tr key={job.id} className="hover:bg-slate-50 transition-colors group">
+                        <td className="py-4 px-5">
+                          <span className="font-mono text-sm font-bold text-slate-800">{job.job_number}</span>
+                          <div className="text-[10px] text-slate-400 mt-0.5">ID: {job.id}</div>
+                        </td>
+                        <td className="py-4 px-5">
+                          <div className="font-semibold text-slate-800">{job.customer_name}</div>
+                          <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                            <FiMapPin size={12} /> <span className="truncate max-w-[180px]">{job.address || 'No address'}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-5">
+                          <div className="mb-2">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Faults</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {faults.length > 0 ? faults.map((f, i) => (
+                                <span key={i} className="inline-flex items-center gap-1 text-[10px] bg-amber-50 text-amber-700 px-2 py-1 rounded-md border border-amber-200">
+                                  <FiAlertCircle size={10} /> {f}
+                                </span>
+                              )) : <span className="text-xs text-slate-400 italic">None</span>}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Accessories</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {accessories.length > 0 ? accessories.map((a, i) => (
+                                <span key={i} className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md border border-indigo-200">
+                                  {a}
+                                </span>
+                              )) : <span className="text-xs text-slate-400 italic">None</span>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-5">
+                          <div className="text-sm font-medium text-slate-800">{formatDate(job.received_on)}</div>
+                          {job.closed_date && <div className="text-[10px] text-emerald-600 mt-1">Closed: {formatDate(job.closed_date)}</div>}
+                        </td>
+                        <td className="py-4 px-5">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${getStatusColor(job.status_code)}`}>
+                            {getStatusLabel(job.status_code)}
                           </span>
-                        </div>
-                        <p className="text-sm text-slate-700 line-clamp-2 max-w-xs">{job.fault_name || '—'}</p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {[1,2,3,4,5,6,7].map(i => job[`acc${i}_name`] && (
-                            <span key={i} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-                              {job[`acc${i}_name`]}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 px-5">
-                        <div className="text-sm font-medium text-slate-800">{formatDate(job.received_on)}</div>
-                        {job.closed_date && <div className="text-[10px] text-emerald-600 mt-1">Closed: {formatDate(job.closed_date)}</div>}
-                      </td>
-                      <td className="py-4 px-5">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
-                          job.status_code === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                          job.status_code === 'IN PROGRESS' ? 'bg-blue-100 text-blue-700' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {job.status_code}
-                        </span>
-                        {job.priority && job.priority !== 'Normal' && (
-                          <div className="text-[10px] font-semibold text-rose-500 mt-1">{job.priority} priority</div>
-                        )}
-                      </td>
-                      <td className="py-4 px-5 text-right">
-                        <div className="font-bold text-slate-900">LKR {finalAmount.toLocaleString()}</div>
-                        {job.discount_value > 0 && <div className="text-[10px] text-rose-500">discount applied</div>}
-                        {job.expected_amount && <div className="text-[10px] text-slate-400">est. LKR {Number(job.expected_amount).toLocaleString()}</div>}
-                      </td>
-                      <td className="py-4 px-5 text-center">
-                        <button
-                          onClick={() => setSelectedJob(job)}
-                          className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition"
-                          aria-label="View details"
-                        >
-                          <FiEye size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {filteredJobs.length === 0 && (
-              <div className="py-16 text-center text-slate-400">
-                <p className="text-lg font-medium">No matching records</p>
-                <p className="text-sm mt-1">Try adjusting your search criteria</p>
-              </div>
-            )}
+                        </td>
+                        <td className="py-4 px-5 text-right">
+                          <div className="font-bold text-slate-900">LKR {calculateFinalAmount(job).toLocaleString()}</div>
+                          {job.discount_value > 0 && <div className="text-[10px] text-rose-500">discount applied</div>}
+                          {job.expected_amount && <div className="text-[10px] text-slate-400">est. LKR {Number(job.expected_amount).toLocaleString()}</div>}
+                        </td>
+                        <td className="py-4 px-5 text-center">
+                          <button onClick={() => setSelectedJob(job)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition" aria-label="View details">
+                            <FiEye size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {filteredJobs.length === 0 && (
+                <div className="py-16 text-center text-slate-400">
+                  <p className="text-lg font-medium">No matching records</p>
+                  <p className="text-sm mt-1">Try adjusting your search criteria</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Modal */}
         {selectedJob && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="sticky top-0 bg-white border-b border-slate-100 p-5 flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-800">Job Details</h2>
-                  <p className="text-sm text-slate-500 font-mono">{selectedJob.job_number}</p>
-                </div>
-                <button onClick={() => setSelectedJob(null)} className="p-2 rounded-full hover:bg-slate-100 transition">
-                  <FiX size={20} className="text-slate-500" />
-                </button>
+                <div><h2 className="text-xl font-bold text-slate-800">Job Details</h2><p className="text-sm text-slate-500 font-mono">{selectedJob.job_number}</p></div>
+                <button onClick={() => setSelectedJob(null)} className="p-2 rounded-full hover:bg-slate-100 transition"><FiX size={20} className="text-slate-500" /></button>
               </div>
               <div className="p-6 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer</label>
-                      <p className="text-lg font-medium text-slate-800 mt-1">{selectedJob.customer_name}</p>
-                      <div className="flex items-start gap-2 text-sm text-slate-600 mt-1">
-                        <FiMapPin className="mt-0.5 flex-shrink-0" size={14} />
-                        <span>{selectedJob.address || '—'}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-6">
-                      <div>
-                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Received</label>
-                        <div className="flex items-center gap-1 mt-1 text-sm">
-                          <FiCalendar size={14} className="text-slate-500" />
-                          <span>{formatDate(selectedJob.received_on)}</span>
-                        </div>
-                      </div>
-                      {selectedJob.closed_date && (
-                        <div>
-                          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Closed</label>
-                          <div className="flex items-center gap-1 mt-1 text-sm">
-                            <FiCheckCircle size={14} className="text-emerald-500" />
-                            <span>{formatDate(selectedJob.closed_date)}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    <div><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Customer</label><p className="text-lg font-medium text-slate-800 mt-1">{selectedJob.customer_name}</p><div className="flex items-start gap-2 text-sm text-slate-600 mt-1"><FiMapPin className="mt-0.5 flex-shrink-0" size={14} /><span>{selectedJob.address || '—'}</span></div></div>
+                    <div className="flex gap-6"><div><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Received</label><div className="flex items-center gap-1 mt-1 text-sm"><FiCalendar size={14} className="text-slate-500" /><span>{formatDate(selectedJob.received_on)}</span></div></div>{selectedJob.closed_date && <div><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Closed</label><div className="flex items-center gap-1 mt-1 text-sm"><FiCheckCircle size={14} className="text-emerald-500" /><span>{formatDate(selectedJob.closed_date)}</span></div></div>}</div>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Category</label>
-                      <p className="text-sm font-medium mt-1">{selectedJob.category_name || '—'}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Priority</label>
-                      <p className="text-sm font-medium mt-1">{selectedJob.priority || 'Normal'}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label>
-                      <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                        selectedJob.status_code === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                        selectedJob.status_code === 'IN PROGRESS' ? 'bg-blue-100 text-blue-700' :
-                        'bg-amber-100 text-amber-700'
-                      }`}>
-                        {selectedJob.status_code}
-                      </span>
-                    </div>
-                  </div>
+                  <div className="space-y-4"><div><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Category</label><p className="text-sm font-medium mt-1">{selectedJob.category_name || '—'}</p></div><div><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</label><span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold uppercase ${getStatusColor(selectedJob.status_code)}`}>{getStatusLabel(selectedJob.status_code)}</span></div></div>
                 </div>
 
                 <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FiTool className="text-slate-500" />
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fault Description</label>
+                  <div className="flex items-center gap-2 mb-3"><FiTool className="text-slate-500" /><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Fault Descriptions</label></div>
+                  <div className="space-y-2">
+                    {[1,2,3,4,5].map(i => {
+                      const fault = selectedJob[`fault${i}_name`];
+                      return fault ? <div key={i} className="flex items-center gap-2 text-sm text-slate-700"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div><span>{fault}</span></div> : null;
+                    })}
+                    {![1,2,3,4,5].some(i => selectedJob[`fault${i}_name`]) && <p className="text-slate-400 text-sm">No faults recorded</p>}
                   </div>
-                  <p className="text-slate-700 whitespace-pre-wrap">{selectedJob.fault_name || 'No description provided.'}</p>
                 </div>
 
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <FiBox className="text-slate-500" />
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Accessories / Parts</label>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {[1,2,3,4,5,6,7].map(i => {
-                      const acc = selectedJob[`acc${i}_name`];
-                      return acc ? (
-                        <div key={i} className="flex items-center gap-2 text-sm bg-white border border-slate-100 rounded-lg p-2 shadow-sm">
-                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                          <span>{acc}</span>
-                        </div>
-                      ) : null;
-                    })}
-                    {!selectedJob.acc1_name && <p className="text-slate-400 text-sm col-span-2">No accessories recorded</p>}
-                  </div>
-                </div>
+                <div><div className="flex items-center gap-2 mb-3"><FiBox className="text-slate-500" /><label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Accessories / Parts</label></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{getAllAccessories(selectedJob).map((acc, idx) => <div key={idx} className="flex items-center gap-2 text-sm bg-white border border-slate-100 rounded-lg p-2 shadow-sm"><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div><span>{acc}</span></div>)}{getAllAccessories(selectedJob).length === 0 && <p className="text-slate-400 text-sm col-span-2">No accessories recorded</p>}</div></div>
 
                 <div className="bg-slate-800 rounded-xl p-6 text-white">
                   <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 opacity-80">Financial Settlement</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-xs opacity-70">Subtotal (LKR)</p>
-                      <p className="text-xl font-bold">{selectedJob.bill_amount ? Number(selectedJob.bill_amount).toLocaleString() : '0.00'}</p>
-                    </div>
-                    {selectedJob.discount_value > 0 && (
-                      <div>
-                        <p className="text-xs opacity-70">Discount</p>
-                        <p className="text-xl font-bold text-rose-300">
-                          {selectedJob.discount_type === 'percentage' ? `${selectedJob.discount_value}%` : `LKR ${selectedJob.discount_value.toLocaleString()}`}
-                        </p>
-                      </div>
-                    )}
-                    <div className="md:text-right">
-                      <p className="text-xs opacity-70">Total Payable</p>
-                      <p className="text-2xl font-bold">LKR {calculateFinalAmount(selectedJob).toLocaleString()}</p>
-                    </div>
+                    <div><p className="text-xs opacity-70">Subtotal (LKR)</p><p className="text-xl font-bold">{selectedJob.bill_amount ? Number(selectedJob.bill_amount).toLocaleString() : '0.00'}</p></div>
+                    {selectedJob.discount_value > 0 && <div><p className="text-xs opacity-70">Discount</p><p className="text-xl font-bold text-rose-300">{selectedJob.discount_type === 'percentage' ? `${selectedJob.discount_value}%` : `LKR ${selectedJob.discount_value.toLocaleString()}`}</p></div>}
+                    <div className="md:text-right"><p className="text-xs opacity-70">Total Payable</p><p className="text-2xl font-bold">LKR {calculateFinalAmount(selectedJob).toLocaleString()}</p></div>
                   </div>
-                  {selectedJob.expected_amount && (
-                    <div className="mt-3 text-right text-sm opacity-70 border-t border-slate-700 pt-2">
-                      Estimated quote: LKR {Number(selectedJob.expected_amount).toLocaleString()}
-                    </div>
-                  )}
+                  {selectedJob.expected_amount && <div className="mt-3 text-right text-sm opacity-70 border-t border-slate-700 pt-2">Estimated quote: LKR {Number(selectedJob.expected_amount).toLocaleString()}</div>}
                 </div>
               </div>
-              <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end rounded-b-2xl">
-                <button onClick={() => setSelectedJob(null)} className="px-5 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition font-medium">
-                  Close
-                </button>
-              </div>
+              <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end rounded-b-2xl"><button onClick={() => setSelectedJob(null)} className="px-5 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition font-medium">Close</button></div>
             </div>
           </div>
         )}

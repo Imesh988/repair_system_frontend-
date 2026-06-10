@@ -19,7 +19,7 @@ const Header = () => {
              <FiActivity className="text-white animate-pulse" size={18} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tighter leading-none">AR COMPUTER & MOBILE</h2>
+            <h2 className="text-xl font-black text-slate-800 tracking-tighter leading-none">AR COMPUTER SOLUTIONS</h2>
             <div className="flex items-center gap-2 mt-1">
             </div>
           </div>
