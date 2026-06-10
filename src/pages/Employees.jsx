@@ -63,7 +63,6 @@ const Employees = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Prevent promoting to admin or demoting self from admin
     if (editingEmployee) {
       if (editingEmployee.role === 'admin' && formData.role !== 'admin') {
         toast.error('Cannot change role of an admin user');
@@ -73,13 +72,11 @@ const Employees = () => {
         toast.error('You are not allowed to promote users to admin');
         return;
       }
-      // Prevent admin from deactivating themselves
       if (user?.id === editingEmployee.employee_id && formData.status !== editingEmployee.status) {
         toast.error('You cannot change your own status');
         return;
       }
     } else {
-      // Prevent creating new admin accounts
       if (formData.role === 'admin') {
         toast.error('Creating new admin accounts is disabled');
         return;
@@ -110,7 +107,6 @@ const Employees = () => {
   };
 
   const handleEdit = (employee) => {
-    // Block editing any admin account
     if (employee.role === 'admin') {
       toast.error('Admin accounts cannot be edited');
       return;
@@ -132,12 +128,10 @@ const Employees = () => {
   };
 
   const handleDelete = async (id, fullName, role) => {
-    // Block deletion of any admin account
     if (role === 'admin') {
       toast.error('Admin accounts cannot be deleted');
       return;
     }
-    // Prevent self-deletion (already covered by role check, but keep for safety)
     if (user?.id === id) {
       toast.error('You cannot delete your own account!');
       return;
@@ -306,7 +300,6 @@ const Employees = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingEmployee ? 'Edit Employee' : 'Add Employee'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -333,12 +326,11 @@ const Employees = () => {
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                   className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500/20 appearance-none bg-white"
-                  disabled={editingEmployee?.role === 'admin'} // Cannot change admin role
+                  disabled={editingEmployee?.role === 'admin'} 
                 >
                   <option value="technician">Technician</option>
                   <option value="receptionist">Receptionist</option>
                   <option value="manager">Manager</option>
-                  {/* Admin option removed from dropdown to prevent creation/assignment */}
                 </select>
               </div>
             </div>
@@ -350,7 +342,7 @@ const Employees = () => {
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500/20 appearance-none bg-white"
-                  disabled={user?.id === editingEmployee?.employee_id} // Cannot change own status
+                  disabled={user?.id === editingEmployee?.employee_id} 
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>

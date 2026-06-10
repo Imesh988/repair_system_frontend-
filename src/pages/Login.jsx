@@ -24,21 +24,17 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] font-sans text-slate-900 overflow-hidden relative">
       
-      {/* --- Abstract Background Elements (Soft Colors) --- */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-200/40 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-lime-200/40 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
       <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-200/30 rounded-full blur-[100px]"></div>
 
-      {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none" 
            style={{ backgroundImage: `radial-gradient(#000 1px, transparent 1px)`, backgroundSize: '30px 30px' }}></div>
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-md px-6">
         
-        {/* --- Logo Section --- */}
         <div className="mb-8 group text-center">
           <div className="relative inline-block">
-            {/* Glow effect around logo */}
             <div className="absolute -inset-4 bg-gradient-to-r from-lime-400 to-cyan-400 rounded-3xl blur-2xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
             
             <div className="relative w-20 h-20 bg-white rounded-3xl border border-slate-100 flex items-center justify-center shadow-xl overflow-hidden transform transition-transform duration-700 group-hover:rotate-[10deg]">
@@ -56,15 +52,12 @@ const Login = () => {
           </div>
         </div>
 
-        {/* --- Login Card (Glassmorphism White) --- */}
         <div className="w-full backdrop-blur-xl bg-white/70 p-10 rounded-[2.5rem] border border-white shadow-[0_20px_50px_rgba(0,0,0,0.04)] relative">
             
-          {/* Top Decorative Line */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-lime-400 to-cyan-400 rounded-b-full"></div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* Email Field */}
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 tracking-widest uppercase ml-2">
                 <FiGlobe className="text-blue-500" /> Operator Identifier
@@ -81,7 +74,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <div className="flex justify-between px-2">
                 <label className="flex items-center gap-2 text-[10px] font-bold text-slate-400 tracking-widest uppercase">
@@ -108,13 +100,11 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
               className="w-full group relative py-4 rounded-2xl overflow-hidden transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-lime-500/20"
             >
-              {/* Animated Gradient Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 group-hover:from-lime-500 group-hover:to-cyan-500 transition-all duration-500"></div>
               
               <div className="relative flex items-center justify-center gap-3">
@@ -126,11 +116,9 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Bottom Link */}
           
         </div>
 
-        {/* --- Bottom Footer Info --- */}
         <div className="mt-12 flex flex-col items-center gap-6">
           <div className="flex gap-4 items-center bg-white/80 backdrop-blur-md px-5 py-2 rounded-full border border-slate-100 shadow-sm">
             <div className="flex items-center gap-2">

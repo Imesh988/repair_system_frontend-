@@ -1,4 +1,3 @@
-// frontend/src/utils/format.js
 export const formatCurrency = (amount) => {
   if (!amount && amount !== 0) return 'LKR 0';
   return `LKR ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

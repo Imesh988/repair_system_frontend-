@@ -1,4 +1,3 @@
-// frontend/src/utils/discountStorage.js
 const STORAGE_KEY = 'repair_discounts';
 
 export const getAllDiscounts = () => {
@@ -12,7 +11,6 @@ export const getAllDiscounts = () => {
   }
 };
 
-// ✅ මෙම function එක එකතු කරන්න
 export const getDiscount = (repairId) => {
   const all = getAllDiscounts();
   return all[repairId] || null;

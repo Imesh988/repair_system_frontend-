@@ -4,12 +4,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Repairs from './pages/Repairs';
 import Inventory from './pages/Inventory';
-import Payments from './pages/Payments';
 import Employees from './pages/Employees';
 import Suppliers from './pages/Suppliers';
-import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
@@ -33,12 +30,9 @@ function App() {
       
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/repairs" element={<Repairs />} />
         <Route path="/inventory" element={<Inventory />} />
-        <Route path="/payments" element={<Payments />} />
         <Route path="/employees" element={<Employees />} />
         <Route path="/suppliers" element={<Suppliers />} />
-        <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/repair-system" element={<RepairSystem />} />

@@ -416,88 +416,360 @@ const RepairJobEntry = () => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice ${jobNumber}</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; padding: 2rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .invoice { max-width: 1100px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25); overflow: hidden; }
-    .invoice-header { background: linear-gradient(135deg, #0a2540, #1f4e6e); color: white; padding: 1.8rem 2.5rem; }
-    .logo-area { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 1rem; flex-wrap: wrap; }
-    .logo-img { width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; overflow: hidden; }
-    .logo-img img { width: 100%; height: 100%; object-fit: cover; }
-    .company-details h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.3px; }
-    .invoice-title { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin-top: 0.8rem; }
-    .title-left h2 { font-size: 1.6rem; font-weight: 600; }
-    .job-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); padding: 0.4rem 1.2rem; border-radius: 40px; font-family: monospace; font-weight: 600; font-size: 1rem; }
-    .invoice-body { padding: 2rem 2.5rem; }
-    .status-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 0.75rem; border-bottom: 2px solid #eef2ff; flex-wrap: wrap; gap: 1rem; }
-    .badge { display: inline-block; padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-    .badge-pending { background: #fef9e3; color: #b45309; border-left: 3px solid #f59e0b; }
-    .badge-progress { background: #e0f2fe; color: #0369a1; border-left: 3px solid #0ea5e9; }
-    .badge-completed { background: #dcfce7; color: #166534; border-left: 3px solid #22c55e; }
-    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; background: #fafcff; padding: 1.2rem; border-radius: 20px; margin-bottom: 2rem; border: 1px solid #e9edf2; }
-    .info-item { display: flex; flex-direction: column; gap: 0.2rem; }
-    .info-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #5b6e8c; letter-spacing: 0.5px; }
-    .info-value { font-weight: 500; color: #0f172a; font-size: 0.95rem; }
-    .section-title { font-size: 1.2rem; font-weight: 700; margin: 2rem 0 1rem 0; color: #0f2b3d; }
-    .billing-card { background: #ffffff; border-radius: 24px; border: 1px solid #e2e8f0; padding: 1.5rem; margin: 1.8rem 0 1rem; box-shadow: 0 8px 20px -6px rgba(0,0,0,0.05); }
-    .billing-row { display: flex; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid #edf2f7; }
-    .total-row { margin-top: 0.5rem; padding-top: 0.8rem; border-top: 2px solid #cbd5e1; font-weight: 800; font-size: 1.2rem; }
-    .final-amount { color: #1e40af; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.3px; }
-    .terms-section {
-      background: white;
-      border-radius: 20px;
-      padding: 1.2rem;
-      margin: 1.8rem 0 1rem;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .terms-title {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 0.8rem;
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      background: #f1f5f9;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .invoice {
+      max-width: 1100px;
+      width: 100%;
+      background: white;
+      border-radius: 28px;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    .invoice-header {
+      background: linear-gradient(135deg, #0a2540, #1f4e6e);
+      color: white;
+      padding: 1.8rem 2.5rem;
+    }
+
+    .logo-top {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 0.8rem;
+      flex-wrap: wrap;
     }
-    .terms-list {
+
+    .logo-img {
+      width: 70px;
+      height: 70px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid white;
+      overflow: hidden;
+    }
+
+    .logo-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .company-text h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .contact-info {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin-top: 0.25rem;
+      opacity: 0.9;
+    }
+
+    .invoice-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-top: 0.8rem;
+    }
+
+    .title-left h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .job-badge {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(4px);
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      font-family: monospace;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .invoice-body {
+      padding: 2rem 2.5rem;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #eef2ff;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-pending {
+      background: #fef9e3;
+      color: #b45309;
+      border-left: 3px solid #f59e0b;
+    }
+
+    .badge-progress {
+      background: #e0f2fe;
+      color: #0369a1;
+      border-left: 3px solid #0ea5e9;
+    }
+
+    .badge-completed {
+      background: #dcfce7;
+      color: #166534;
+      border-left: 3px solid #22c55e;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      background: #fafcff;
+      padding: 1.2rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      border: 1px solid #e9edf2;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .info-label {
       font-size: 0.7rem;
-      color: #334155;
-      line-height: 1.5;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #5b6e8c;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-weight: 500;
+      color: #0f172a;
+      font-size: 0.95rem;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 2rem 0 1rem 0;
+      color: #0f2b3d;
+    }
+
+    .billing-card {
+      background: #ffffff;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      padding: 1.5rem;
+      margin: 1.8rem 0 1rem;
+      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    .billing-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .total-row {
+      margin-top: 0.5rem;
+      padding-top: 0.8rem;
+      border-top: 2px solid #cbd5e1;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
+    .final-amount {
+      color: #1e40af;
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .terms-section {
+      background: #000000;
+      border-radius: 24px;
+      padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+      margin: 1.8rem 0 1rem;
+      border: 1px solid #2c2c2c;
+      box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .terms-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.2px;
+      border-bottom: 1px solid #333333;
+      padding-bottom: 0.6rem;
+    }
+
+    .terms-list {
+      font-size: 0.72rem;
+      color: #e0e0e0;
+      line-height: 1.55;
       list-style: none;
       padding-left: 0;
+      margin-top: 0.25rem;
     }
+
     .terms-list li {
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.55rem;
       position: relative;
-      padding-left: 1rem;
+      padding-left: 1.2rem;
     }
+
     .terms-list li::before {
-      content: "•";
+      content: "▹";
       position: absolute;
       left: 0;
-      color: #1e3a8a;
+      color: #ffcd4a;
+      font-size: 0.7rem;
+      top: 0px;
+      font-weight: 600;
     }
-    .invoice-footer { margin-top: 2rem; text-align: center; border-top: 1px solid #eef2ff; padding-top: 1.5rem; font-size: 0.7rem; color: #5b6e8c; }
-    .thankyou { font-weight: 600; margin-bottom: 5px; color: #0f2b3d; }
-    .action-buttons { display: flex; justify-content: center; gap: 1rem; margin: 1.5rem 2rem 2rem; }
-    .btn { background: #1e3a8a; border: none; padding: 0.6rem 1.8rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: 0.2s; font-family: inherit; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .btn:hover { background: #2563eb; transform: scale(1.02); }
-    .btn-close { background: #475569; }
-    .btn-close:hover { background: #334155; }
-    @media print { body { background: white; padding: 0; } .invoice { box-shadow: none; border-radius: 0; max-width: 100%; } .action-buttons { display: none !important; } .badge, .logo-img img, .invoice-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    @media (max-width: 640px) { body { padding: 0.8rem; } .invoice-body { padding: 1.2rem; } .info-grid { grid-template-columns: 1fr; } }
+
+    .invoice-footer {
+      margin-top: 2rem;
+      text-align: center;
+      border-top: 1px solid #eef2ff;
+      padding-top: 1.5rem;
+      font-size: 0.7rem;
+      color: #5b6e8c;
+    }
+
+    .thankyou {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #0f2b3d;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 2rem 2rem;
+    }
+
+    .btn {
+      background: #1e3a8a;
+      border: none;
+      padding: 0.6rem 1.8rem;
+      border-radius: 40px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.2s;
+      font-family: inherit;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      background: #2563eb;
+      transform: scale(1.02);
+    }
+
+    .btn-close {
+      background: #475569;
+    }
+
+    .btn-close:hover {
+      background: #334155;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .invoice {
+        box-shadow: none;
+        border-radius: 0;
+        max-width: 100%;
+      }
+      .action-buttons {
+        display: none !important;
+      }
+      .badge,
+      .logo-img img,
+      .invoice-header,
+      .terms-section {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0.8rem;
+      }
+      .invoice-body {
+        padding: 1.2rem;
+      }
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      .terms-section {
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
 <div class="invoice">
   <div class="invoice-header">
-    <div class="logo-area">
+    <div class="logo-top">
       <div class="logo-img">
         <img src="/ar.jpeg" alt="AR Computers" onerror="this.src='/remove.png'; this.onerror=this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%233b82f6\'/%3E%3Ctext x=\'50\' y=\'67\' font-size=\'40\' text-anchor=\'middle\' fill=\'white\' font-weight=\'bold\'%3EAR%3C/text%3E%3C/svg%3E'" />
       </div>
-      <div class="company-details">
-        <h1> AR COMPUTER SOLUTIONS</h1>
+      <div class="company-text">
+        <h2>AR COMPUTER SOLUTIONS</h2>
       </div>
+    </div>
+    <div class="contact-info">
+      No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664<br/>
+      Email: arcomputersp@gmail.com
     </div>
     <div class="invoice-title">
       <div class="title-left">
@@ -513,7 +785,7 @@ const RepairJobEntry = () => {
       <div>
         <span class="badge ${statusBadgeClass}">${statusText}</span>
       </div>
-      <div class="invoice-meta">📅 Issued: ${invoiceDate}</div>
+      <div class="invoice-meta">Issued: ${invoiceDate}</div>
     </div>
 
     <div class="info-grid">
@@ -525,9 +797,7 @@ const RepairJobEntry = () => {
       <div class="info-item"><span class="info-label">Fault Description</span><span class="info-value">${faultText}</span></div>
     </div>
 
-    <div class="section-title">
-      Financial Summary
-    </div>
+    <div class="section-title">Financial Summary</div>
     <div class="billing-card">
       <div class="billing-row"><span>Subtotal (LKR)</span><span><strong>${billAmountDisplay}</strong></span></div>
       ${job.discount_value && job.discount_value > 0 && billAmountRaw ? `
@@ -536,8 +806,8 @@ const RepairJobEntry = () => {
       <div class="billing-row total-row"><span>Total Amount Due</span><span class="final-amount">LKR ${finalAmountFormatted}</span></div>
     </div>
 
-    <!-- Terms & Conditions Section (White Background) -->
-    
+   
+
     <div class="invoice-footer">
       <div class="thankyou">Thank you for choosing AR COMPUTERS!</div>
       <p>No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664</p>
