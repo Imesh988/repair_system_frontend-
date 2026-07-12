@@ -387,6 +387,16 @@ const RepairJobEntry = () => {
     const address = escapeHtml(job.address) || '-';
     const categoryName = escapeHtml(job.category_name) || '-';
     const faultText = [job.fault1_name, job.fault2_name, job.fault3_name, job.fault4_name, job.fault5_name].filter(f => f).join(', ') || '-';
+
+    // ★ Accessories list with labels (1-7) ★
+    const accessoryLabels = ['1', '2', '3', '4', '5', '6', '7'];
+    const accessoriesList = [1, 2, 3, 4, 5, 6, 7]
+      .map((i, idx) => ({
+        label: accessoryLabels[idx],
+        name: job[`acc${i}_name`]
+      }))
+      .filter(a => a.name && a.name.trim() !== '');
+
     const statusCode = escapeHtml(job.status_code);
     const receivedDate = job.received_on ? new Date(job.received_on).toLocaleDateString() : '-';
     const closedDate = job.closed_date ? new Date(job.closed_date).toLocaleDateString() : '-';
@@ -409,352 +419,440 @@ const RepairJobEntry = () => {
     if (statusCode === 'COMPLETED') { statusBadgeClass = 'badge-completed'; statusText = 'Handover'; }
     if (statusCode === 'PENDING') { statusBadgeClass = 'badge-pending'; statusText = 'Done'; }
 
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invoice ${jobNumber}</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  /* ---- A5 Invoice CSS ---- */
+  @page {
+    size: A5 portrait;
+    margin: 8mm 6mm;
+  }
 
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background: white;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .invoice {
+    max-width: 100%;
+    width: 100%;
+    background: white;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+  }
+
+  /* ---- Header (CENTERED - design change only) ---- */
+  .invoice-header {
+    background: linear-gradient(135deg, #0a2540, #1f4e6e);
+    color: white;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+  }
+
+  .logo-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .logo-img {
+    width: 45px;
+    height: 45px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .logo-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+.company-text h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #86efac; /* light green */
+  text-shadow: 0 0 15px rgba(134, 239, 172, 0.5), 0 0 30px rgba(134, 239, 172, 0.2);
+  background: linear-gradient(to right, #86efac, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+  .contact-info {
+    font-size: 0.55rem;
+    line-height: 1.4;
+    opacity: 0.9;
+    text-align: center;
+  }
+
+  /* ---- Invoice Title (CENTERED) ---- */
+  .invoice-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.2rem;
+    margin-top: 0.4rem;
+  }
+
+  .invoice-title h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .invoice-title p {
+    font-size: 0.5rem;
+    opacity: 0.8;
+    margin-top: -2px;
+  }
+
+  .job-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.2rem 0.8rem;
+    border-radius: 30px;
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 0.65rem;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ---- Body ---- */
+  .invoice-body {
+    padding: 0.8rem 1.2rem;
+  }
+
+  /* ---- Status ---- */
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #eef2ff;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border-radius: 30px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .badge-pending {
+    background: #fef9e3;
+    color: #b45309;
+    border-left: 2px solid #f59e0b;
+  }
+
+  .badge-progress {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-left: 2px solid #0ea5e9;
+  }
+
+  .badge-completed {
+    background: #dcfce7;
+    color: #166534;
+    border-left: 2px solid #22c55e;
+  }
+
+  .invoice-meta {
+    font-size: 0.6rem;
+    color: #555;
+  }
+
+  /* ---- Info Grid ---- */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 1rem;
+    background: #f8fafc;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid #e9edf2;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .info-label {
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5b6e8c;
+    letter-spacing: 0.3px;
+  }
+
+  .info-value {
+    font-weight: 500;
+    color: #0f172a;
+    font-size: 0.7rem;
+    word-break: break-word;
+  }
+
+  /* ---- Sections ---- */
+  .section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 0.8rem 0 0.3rem 0;
+    color: #0f2b3d;
+  }
+
+  /* ★ Accessories Grid - 3 columns with numbers ★ */
+  .accessories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem 0.8rem;
+    background: #f1f5f9;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.8rem;
+  }
+
+  .accessory-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.6rem;
+    color: #0f172a;
+  }
+
+  .accessory-number {
+    font-weight: 800;
+    color: #475569;
+    font-size: 0.5rem;
+    background: #e2e8f0;
+    padding: 0.05rem 0.3rem;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  .accessory-name {
+    font-weight: 500;
+    word-break: break-word;
+  }
+
+  /* Fallback if no accessories */
+  .accessories-list {
+    background: #f1f5f9;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+    border: 1px solid #e2e8f0;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  /* ---- Billing ---- */
+  .billing-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 0.7rem 1rem;
+    margin: 0.8rem 0 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .billing-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 0.7rem;
+  }
+
+  .total-row {
+    margin-top: 0.2rem;
+    padding-top: 0.4rem;
+    border-top: 2px solid #cbd5e1;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+
+  .final-amount {
+    color: #1e40af;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+  }
+
+  /* ---- Terms ---- */
+  .terms-section {
+    background: #000000;
+    border-radius: 16px;
+    padding: 0.8rem 1rem 0.6rem 1rem;
+    margin: 0.8rem 0 0.5rem;
+    border: 1px solid #2c2c2c;
+  }
+
+  .terms-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.4rem;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 0.4rem;
+  }
+
+  .terms-list {
+    font-size: 0.5rem;
+    color: #d0d0d0;
+    line-height: 1.4;
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .terms-list li {
+    margin-bottom: 0.15rem;
+    position: relative;
+    padding-left: 1rem;
+  }
+
+  .terms-list li::before {
+    content: "▹";
+    position: absolute;
+    left: 0;
+    color: #ffcd4a;
+    font-size: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* ---- Footer ---- */
+  .invoice-footer {
+    margin-top: 0.8rem;
+    text-align: center;
+    border-top: 1px solid #eef2ff;
+    padding-top: 0.6rem;
+    font-size: 0.5rem;
+    color: #5b6e8c;
+  }
+
+  .thankyou {
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: #0f2b3d;
+    margin-bottom: 2px;
+  }
+
+  .invoice-footer p {
+    margin-bottom: 1px;
+  }
+
+  /* ---- Action Buttons ---- */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin: 0.8rem 0 0.5rem;
+  }
+
+  .btn {
+    background: #1e3a8a;
+    border: none;
+    padding: 0.3rem 1.2rem;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-family: inherit;
+  }
+
+  .btn:hover {
+    background: #2563eb;
+  }
+
+  .btn-close {
+    background: #475569;
+  }
+
+  .btn-close:hover {
+    background: #334155;
+  }
+
+  /* ---- Print ---- */
+  @media print {
     body {
-      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-      background: #f1f5f9;
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background: white;
+      padding: 0;
+      margin: 0;
     }
-
     .invoice {
-      max-width: 1100px;
-      width: 100%;
-      background: white;
-      border-radius: 28px;
-      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25);
-      overflow: hidden;
+      box-shadow: none;
+      border-radius: 0;
+      max-width: 100%;
     }
-
-    .invoice-header {
-      background: linear-gradient(135deg, #0a2540, #1f4e6e);
-      color: white;
-      padding: 1.8rem 2.5rem;
-    }
-
-    .logo-top {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      padding-bottom: 0.8rem;
-      flex-wrap: wrap;
-    }
-
-    .logo-img {
-      width: 70px;
-      height: 70px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 3px solid white;
-      overflow: hidden;
-    }
-
-    .logo-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .company-text h2 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-
-    .contact-info {
-      font-size: 0.75rem;
-      line-height: 1.4;
-      margin-top: 0.25rem;
-      opacity: 0.9;
-    }
-
-    .invoice-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      flex-wrap: wrap;
-      margin-top: 0.8rem;
-    }
-
-    .title-left h2 {
-      font-size: 1.6rem;
-      font-weight: 600;
-    }
-
-    .job-badge {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(4px);
-      padding: 0.4rem 1.2rem;
-      border-radius: 40px;
-      font-family: monospace;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .invoice-body {
-      padding: 2rem 2.5rem;
-    }
-
-    .status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 2px solid #eef2ff;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 0.3rem 1rem;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .badge-pending {
-      background: #fef9e3;
-      color: #b45309;
-      border-left: 3px solid #f59e0b;
-    }
-
-    .badge-progress {
-      background: #e0f2fe;
-      color: #0369a1;
-      border-left: 3px solid #0ea5e9;
-    }
-
-    .badge-completed {
-      background: #dcfce7;
-      color: #166534;
-      border-left: 3px solid #22c55e;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      background: #fafcff;
-      padding: 1.2rem;
-      border-radius: 20px;
-      margin-bottom: 2rem;
-      border: 1px solid #e9edf2;
-    }
-
-    .info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
-
-    .info-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #5b6e8c;
-      letter-spacing: 0.5px;
-    }
-
-    .info-value {
-      font-weight: 500;
-      color: #0f172a;
-      font-size: 0.95rem;
-    }
-
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin: 2rem 0 1rem 0;
-      color: #0f2b3d;
-    }
-
-    .billing-card {
-      background: #ffffff;
-      border-radius: 24px;
-      border: 1px solid #e2e8f0;
-      padding: 1.5rem;
-      margin: 1.8rem 0 1rem;
-      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05);
-    }
-
-    .billing-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.7rem 0;
-      border-bottom: 1px solid #edf2f7;
-    }
-
-    .total-row {
-      margin-top: 0.5rem;
-      padding-top: 0.8rem;
-      border-top: 2px solid #cbd5e1;
-      font-weight: 800;
-      font-size: 1.2rem;
-    }
-
-    .final-amount {
-      color: #1e40af;
-      font-size: 1.7rem;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-    }
-
-    .terms-section {
-      background: #000000;
-      border-radius: 24px;
-      padding: 1.5rem 1.5rem 1.2rem 1.5rem;
-      margin: 1.8rem 0 1rem;
-      border: 1px solid #2c2c2c;
-      box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .terms-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      letter-spacing: -0.2px;
-      border-bottom: 1px solid #333333;
-      padding-bottom: 0.6rem;
-    }
-
-    .terms-list {
-      font-size: 0.72rem;
-      color: #e0e0e0;
-      line-height: 1.55;
-      list-style: none;
-      padding-left: 0;
-      margin-top: 0.25rem;
-    }
-
-    .terms-list li {
-      margin-bottom: 0.55rem;
-      position: relative;
-      padding-left: 1.2rem;
-    }
-
-    .terms-list li::before {
-      content: "▹";
-      position: absolute;
-      left: 0;
-      color: #ffcd4a;
-      font-size: 0.7rem;
-      top: 0px;
-      font-weight: 600;
-    }
-
-    .invoice-footer {
-      margin-top: 2rem;
-      text-align: center;
-      border-top: 1px solid #eef2ff;
-      padding-top: 1.5rem;
-      font-size: 0.7rem;
-      color: #5b6e8c;
-    }
-
-    .thankyou {
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: #0f2b3d;
-    }
-
     .action-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin: 1.5rem 2rem 2rem;
+      display: none !important;
     }
+    .badge,
+    .logo-img img,
+    .invoice-header,
+    .terms-section {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
 
-    .btn {
-      background: #1e3a8a;
-      border: none;
-      padding: 0.6rem 1.8rem;
-      border-radius: 40px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.2s;
-      font-family: inherit;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  /* ---- Mobile ---- */
+  @media (max-width: 500px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
     }
-
-    .btn:hover {
-      background: #2563eb;
-      transform: scale(1.02);
+    .invoice-body {
+      padding: 0.6rem;
     }
-
-    .btn-close {
-      background: #475569;
+    .invoice-header {
+      padding: 0.8rem;
     }
-
-    .btn-close:hover {
-      background: #334155;
+    .accessories-grid {
+      grid-template-columns: repeat(2, 1fr);
     }
-
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-      }
-      .invoice {
-        box-shadow: none;
-        border-radius: 0;
-        max-width: 100%;
-      }
-      .action-buttons {
-        display: none !important;
-      }
-      .badge,
-      .logo-img img,
-      .invoice-header,
-      .terms-section {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 0.8rem;
-      }
-      .invoice-body {
-        padding: 1.2rem;
-      }
-      .info-grid {
-        grid-template-columns: 1fr;
-      }
-      .terms-section {
-        padding: 1rem;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 <div class="invoice">
@@ -767,15 +865,16 @@ const RepairJobEntry = () => {
         <h2>AR COMPUTER SOLUTIONS</h2>
       </div>
     </div>
+    <!-- Contact info changed to 3 separate lines (design change) -->
     <div class="contact-info">
-      No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664<br/>
+      No.84, Siriwardana Road, Deraniyagala<br/>
+      WhatsApp: 0722306895 | Tel: 0772680664<br/>
       Email: arcomputersp@gmail.com
     </div>
+    <!-- Invoice title centered (design change) -->
     <div class="invoice-title">
-      <div class="title-left">
-        <h2>REPAIR INVOICE</h2>
-        <p>Service Document • Original Copy</p>
-      </div>
+      <h2>REPAIR INVOICE</h2>
+      <p>Service Document • Original Copy</p>
       <div class="job-badge">${jobNumber}</div>
     </div>
   </div>
@@ -797,6 +896,19 @@ const RepairJobEntry = () => {
       <div class="info-item"><span class="info-label">Fault Description</span><span class="info-value">${faultText}</span></div>
     </div>
 
+    <!-- ★ Accessories section ★ -->
+    <div class="section-title">Accessories Used</div>
+    ${accessoriesList.length > 0 ? `
+      <div class="accessories-grid">
+        ${accessoriesList.map(a => `
+          <div class="accessory-item">
+            <span class="accessory-number">${a.label}</span>
+            <span class="accessory-name">${escapeHtml(a.name)}</span>
+          </div>
+        `).join('')}
+      </div>
+    ` : `<div class="accessories-list">None</div>`}
+
     <div class="section-title">Financial Summary</div>
     <div class="billing-card">
       <div class="billing-row"><span>Subtotal (LKR)</span><span><strong>${billAmountDisplay}</strong></span></div>
@@ -806,10 +918,8 @@ const RepairJobEntry = () => {
       <div class="billing-row total-row"><span>Total Amount Due</span><span class="final-amount">LKR ${finalAmountFormatted}</span></div>
     </div>
 
-   
-
     <div class="invoice-footer">
-      <div class="thankyou">Thank you for choosing AR COMPUTERS!</div>
+      <div class="thankyou">Thank you for choosing AR COMPUTER SOLUTIONS !</div>
       <p>No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664</p>
       <p>Email: arcomputersp@gmail.com | This is a computer-generated invoice – valid without signature.</p>
     </div>
@@ -822,6 +932,7 @@ const RepairJobEntry = () => {
 </div>
 </body>
 </html>`;
+
     const win = window.open();
     win.document.write(html);
     win.document.close();
@@ -845,7 +956,15 @@ const RepairJobEntry = () => {
     };
 
     const faults = [job.fault1_name, job.fault2_name, job.fault3_name, job.fault4_name, job.fault5_name].filter(f => f).join(', ');
-    const accessories = [1,2,3,4,5,6,7].map(i => job[`acc${i}_name`]).filter(a => a).join(', ');
+
+    // Accessories array with labels
+    const accessoryLabels = ['1', '2', '3', '4', '5', '6', '7'];
+    const accessoriesList = [1, 2, 3, 4, 5, 6, 7]
+      .map((i, idx) => ({
+        label: accessoryLabels[idx],
+        name: job[`acc${i}_name`]
+      }))
+      .filter(a => a.name && a.name.trim() !== '');
 
     const html = `<!DOCTYPE html>
 <html>
@@ -853,304 +972,383 @@ const RepairJobEntry = () => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Warranty Certificate - ${escapeHtml(job.job_number)}</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+  /* ---- A5 Warranty Certificate CSS ---- */
+  @page {
+    size: A5 portrait;
+    margin: 8mm 6mm;
+  }
 
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background: white;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .invoice-footer {
+    margin-top: 0.8rem;
+    text-align: center;
+    border-top: 1px solid #eef2ff;
+    padding-top: 0.6rem;
+    font-size: 0.5rem;
+    color: #5b6e8c;
+  }
+
+    .invoice-footer p {
+    margin-bottom: 1px;
+  }
+
+  .warranty {
+    max-width: 100%;
+    width: 100%;
+    background: white;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+  }
+
+  /* ---- Header (CENTERED) ---- */
+  .header {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: white;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .logo-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .logo-img {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .logo-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+.company-text h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #86efac;
+  text-shadow: 0 0 15px rgba(134, 239, 172, 0.5), 0 0 30px rgba(134, 239, 172, 0.2);
+  background: linear-gradient(to right, #86efac, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+  .company-text p {
+    font-size: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .contact-info {
+    font-size: 0.5rem;
+    opacity: 0.85;
+    line-height: 1.4; /* line height ටිකක් වැඩි කළා හොඳට පේන්න */
+    text-align: center;
+  }
+
+  .title-right {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .title-right h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+  }
+
+  .badge {
+    background: #fef9c3;
+    color: #854d0e;
+    display: inline-block;
+    padding: 0.15rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+
+  /* ---- Content ---- */
+  .content {
+    padding: 0.8rem 1rem;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem 1.2rem;
+    background: #f8fafc;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    border: 1px solid #e9edf2;
+  }
+
+  .info-item {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.2rem;
+    text-align: center;
+  }
+
+  .info-label {
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    letter-spacing: 0.3px;
+  }
+
+  .info-value {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-top: 0.05rem;
+    word-break: break-word;
+  }
+
+  .section-block {
+    margin: 0.6rem 0;
+  }
+
+  .section-title {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #334155;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.3px;
+  }
+
+  .section-value {
+    background: #f1f5f9;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  /* ---- Accessories Grid (3 columns) ---- */
+  .accessories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem 0.8rem;
+    background: #f1f5f9;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .accessory-item {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.6rem;
+    color: #0f172a;
+  }
+
+  .accessory-number {
+    font-weight: 800;
+    color: #475569;
+    font-size: 0.5rem;
+    background: #e2e8f0;
+    padding: 0.05rem 0.3rem;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  .accessory-name {
+    font-weight: 500;
+    word-break: break-word;
+  }
+
+  /* ---- Terms ---- */
+  .terms {
+    background: #ffffff;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.5rem;
+    color: #334155;
+    margin: 0.6rem 0;
+    line-height: 1.4;
+    border: 1px solid #e2e8f0;
+  }
+
+  .terms strong {
+    color: black;
+    display: block;
+    font-size: 0.6rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .terms ul {
+    margin-left: 0.5rem;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .terms li {
+    margin-bottom: 0.05rem;
+    position: relative;
+    padding-left: 0.7rem;
+  }
+
+  .terms li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #6b4ed33d;
+  }
+
+  /* ---- Signature ---- */
+  .signature {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.8rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #cbd5e1;
+  }
+
+  .signature-item {
+    text-align: center;
+    width: 45%;
+  }
+
+  .signature-line {
+    margin-top: 0.5rem;
+    border-top: 1px solid #94a3b8;
+    width: 100%;
+    padding-top: 0.15rem;
+  }
+
+  .signature-label {
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  /* ---- Footer ---- */
+  .footer {
+    background: #f8fafc;
+    padding: 0.4rem;
+    text-align: center;
+    font-size: 0.5rem;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  /* ---- Buttons ---- */
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 0.6rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .btn {
+    background: #1e293b;
+    border: none;
+    padding: 0.3rem 1.2rem;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-family: inherit;
+  }
+
+  .btn:hover {
+    background: #0f172a;
+  }
+
+  /* ---- Print ---- */
+  @media print {
     body {
-      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-      background: #e2e8f0;
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background: white;
+      padding: 0;
+      margin: 0;
     }
-
     .warranty {
-      max-width: 1000px;
-      width: 100%;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 20px 35px -8px rgba(0,0,0,0.2);
-      overflow: hidden;
+      max-width: 100%;
+      box-shadow: none;
+      border-radius: 0;
     }
-
-    .header {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      color: white;
-      padding: 1.5rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .logo-area {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .logo-top {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .logo-img {
-      width: 65px;
-      height: 65px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid white;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .logo-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .company-text h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-
-    .company-text p {
-      font-size: 0.7rem;
-      opacity: 0.8;
-    }
-
-    .contact-info {
-      font-size: 0.65rem;
-      opacity: 0.85;
-      margin-top: 0.2rem;
-      line-height: 1.3;
-    }
-
-    .badge {
-      background: #fef9c3;
-      color: #854d0e;
-      display: inline-block;
-      padding: 0.3rem 1.2rem;
-      border-radius: 40px;
-      font-size: 0.75rem;
-      font-weight: bold;
-    }
-
-    .title-right {
-      text-align: right;
-    }
-
-    .title-right h3 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 0.3rem;
-    }
-
-    .content {
-      padding: 2rem;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem 2rem;
-      background: #f8fafc;
-      padding: 1.5rem;
-      border-radius: 20px;
-      margin-bottom: 2rem;
-    }
-
-    .info-item {
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 0.5rem;
-    }
-
-    .info-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #475569;
-      letter-spacing: 0.5px;
-    }
-
-    .info-value {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #0f172a;
-      margin-top: 0.2rem;
-      word-break: break-word;
-    }
-
-    .section-block {
-      margin: 1.5rem 0;
-    }
-
-    .section-title {
-      font-size: 0.8rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: #334155;
-      margin-bottom: 0.5rem;
-      letter-spacing: 0.5px;
-    }
-
-    .section-value {
-      background: #f1f5f9;
-      padding: 0.6rem 1rem;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      color: #0f172a;
-      border: 1px solid #e2e8f0;
-    }
-
-    /* Terms & Conditions - WHITE BACKGROUND */
-    .terms {
-      background: #ffffff;
-      padding: 1rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      color: #334155;
-      margin: 1.5rem 0;
-      line-height: 1.5;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-
-    .terms strong {
-      color: black;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    .terms ul {
-      margin-left: 1rem;
-      padding-left: 0;
-      list-style: none;
-    }
-
-    .terms li {
-      margin-bottom: 0.2rem;
-      position: relative;
-      padding-left: 1rem;
-    }
-
-    .terms li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #6b4ed33d;
-    }
-
-    .signature {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 2px dashed #cbd5e1;
-    }
-
-    .signature-item {
-      text-align: center;
-      width: 45%;
-    }
-
-    .signature-line {
-      margin-top: 1rem;
-      border-top: 1px solid #94a3b8;
-      width: 100%;
-      padding-top: 0.3rem;
-    }
-
-    .signature-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    .footer {
-      background: #f8fafc;
-      padding: 1rem;
-      text-align: center;
-      font-size: 0.65rem;
-      color: #64748b;
-      border-top: 1px solid #e2e8f0;
-    }
-
     .btn-group {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: white;
-      border-top: 1px solid #e2e8f0;
+      display: none !important;
     }
+    .header,
+    .logo-img,
+    .badge {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
 
-    .btn {
-      background: #1e293b;
-      border: none;
-      padding: 0.5rem 1.8rem;
-      border-radius: 40px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: 0.2s;
+  /* ---- Mobile ---- */
+  @media (max-width: 500px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
     }
-
-    .btn:hover {
-      background: #0f172a;
-      transform: scale(1.02);
+    .content {
+      padding: 0.6rem;
     }
-
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-        margin: 0;
-      }
-      .warranty {
-        max-width: 100%;
-        box-shadow: none;
-        border-radius: 0;
-      }
-      .btn-group {
-        display: none !important;
-      }
-      .header {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .logo-img {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .badge {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+    .header {
+      padding: 0.6rem;
     }
-
-    @media (max-width: 640px) {
-      body { padding: 1rem; }
-      .header { flex-direction: column; text-align: center; }
-      .title-right { text-align: center; }
-      .info-grid { grid-template-columns: 1fr; gap: 0.8rem; }
-      .signature { flex-direction: column; gap: 1.5rem; }
-      .signature-item { width: 100%; }
+    .signature {
+      flex-direction: column;
+      gap: 0.8rem;
     }
-  </style>
+    .signature-item {
+      width: 100%;
+    }
+    .accessories-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
 </head>
 <body>
 <div class="warranty">
@@ -1164,13 +1362,15 @@ const RepairJobEntry = () => {
           <h2>AR COMPUTER SOLUTIONS</h2>
         </div>
       </div>
+      <!-- contact-info වෙනස් කළේ මෙතන -->
       <div class="contact-info">
-        No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664<br/>
+        No.84, Siriwardana Road, Deraniyagala<br/>
+        WhatsApp: 0722306895 | Tel: 0772680664<br/>
         Email: arcomputersp@gmail.com
       </div>
     </div>
     <div class="title-right">
-      <h3>WARRANTY CERTIFICATE</h3>
+      <h3>REPAIR INVOICE</h3>
       <div class="badge">${warrantyMonths} MONTHS WARRANTY</div>
     </div>
   </div>
@@ -1218,10 +1418,19 @@ const RepairJobEntry = () => {
 
     <div class="section-block">
       <div class="section-title">PARTS / ACCESSORIES USED</div>
-      <div class="section-value">${accessories || '—'}</div>
+      ${accessoriesList.length > 0 ? `
+      <div class="accessories-grid">
+        ${accessoriesList.map(a => `
+          <div class="accessory-item">
+            <span class="accessory-number">${a.label}</span>
+            <span class="accessory-name">${escapeHtml(a.name)}</span>
+          </div>
+        `).join('')}
+      </div>
+      ` : `<div class="section-value">—</div>`}
     </div>
 
-    <!-- Terms section with WHITE background -->
+    <!-- Terms section -->
     <div class="terms">
       <strong> Warranty Terms & Conditions</strong>
       <ul>
@@ -1242,13 +1451,13 @@ const RepairJobEntry = () => {
 
     <div class="signature">
       <div class="signature-item">
-        <div class="signature-label">Authorized Signature</div>
         <div class="signature-line"></div>
-        <div style="font-size:0.65rem; margin-top:0.3rem;">(AR Computers)</div>
+        <div style="font-size:0.65rem; margin-top:0.3rem;">(AR Computer Solution)</div>
       </div>
       <div class="signature-item">
-        <div class="signature-label">Customer Signature</div>
+      
         <div class="signature-line"></div>
+          <div class="signature-label">Customer Signature</div>
       </div>
     </div>
   </div>
@@ -1256,6 +1465,12 @@ const RepairJobEntry = () => {
   <div class="footer">
     This is a computer-generated document – valid without signature.
   </div>
+
+  <div class="invoice-footer">
+      <div class="thankyou">Thank you for choosing AR COMPUTER SOLUTIONS !</div>
+      <p>No.84, Siriwardana Road, Deraniyagala | WhatsApp: 0722306895 | Tel: 0772680664</p>
+      <p>Email: arcomputersp@gmail.com | This is a computer-generated invoice – valid without signature.</p>
+    </div>  
 
   <div class="btn-group">
     <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
@@ -1269,7 +1484,6 @@ const RepairJobEntry = () => {
     win.document.write(html);
     win.document.close();
   };
-
   const filteredJobs = jobs.filter(job => job.job_number?.toLowerCase().includes(searchTerm.toLowerCase()) || job.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()));
   const totalBill = filteredJobs.reduce((s, j) => s + (Number(j.bill_amount) || 0), 0);
   const totalFinal = filteredJobs.reduce((s, j) => s + (Number(j.final_amount) || Number(j.bill_amount) || 0), 0);
@@ -1320,7 +1534,7 @@ const RepairJobEntry = () => {
           <div className="mt-6 pt-5 border-t border-slate-200">
             <h3 className="text-md font-semibold text-slate-800 mb-3 flex items-center gap-2"><span className="text-indigo-500">🔧</span> Accessories (7)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[1,2,3,4,5,6,7].map(i => (
+              {[1, 2, 3, 4, 5, 6, 7].map(i => (
                 <div key={i}><label className="block text-xs font-medium text-slate-500 mb-1">Accessory {i}</label><AccessoryCombobox value={formData[`acc${i}_name`]} onChange={handleChange} placeholder={`Select or type accessory ${i}`} index={i} /></div>
               ))}
             </div>
@@ -1329,7 +1543,7 @@ const RepairJobEntry = () => {
           <div className="mt-6 pt-5 border-t border-slate-200">
             <h3 className="text-md font-semibold text-slate-800 mb-3 flex items-center gap-2"><span className="text-indigo-500">⚠️</span> Faults (5)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {[1,2,3,4,5].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <div key={i}><label className="block text-xs font-medium text-slate-500 mb-1">Fault {i}</label><FaultCombobox value={formData[`fault${i}_name`]} onChange={handleChange} placeholder={`Select or describe fault ${i}`} index={i} /></div>
               ))}
             </div>
@@ -1370,7 +1584,7 @@ const RepairJobEntry = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, discount_type:'percentage', discount_value:0})}
+                      onClick={() => setFormData({ ...formData, discount_type: 'percentage', discount_value: 0 })}
                       className="px-4 py-2 rounded-xl border border-rose-300 text-rose-600 hover:bg-rose-50 transition flex items-center gap-1.5 font-medium"
                     >
                       <FiX size={16} /> Clear
@@ -1384,8 +1598,8 @@ const RepairJobEntry = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-emerald-700 font-semibold">✨ Discount applied:</span>
                       <span className="text-emerald-800 font-bold text-lg">
-                        {formData.discount_type === 'percentage' 
-                          ? `${formData.discount_value}%` 
+                        {formData.discount_type === 'percentage'
+                          ? `${formData.discount_value}%`
                           : `LKR ${Number(formData.discount_value).toLocaleString()}`}
                       </span>
                     </div>
